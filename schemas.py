@@ -4,7 +4,7 @@ from typing import Optional
 # 기본 스키마
 class UserBase(BaseModel):
   username: str
-  phone: Optional[str] = None
+  nickname: str
   email: Optional[EmailStr] = None
   class Config:
     from_attributes = True
