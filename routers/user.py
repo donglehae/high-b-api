@@ -3,7 +3,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from database import get_db
-import models, schemas, utils
+import models, schemas, utils, oauth2
 
 router = APIRouter(
   prefix="/user",
@@ -37,3 +37,11 @@ def create_user(request_data: schemas.UserCreate, db: Session = Depends(get_db))
   db.refresh(new_user)
   
   return new_user
+
+@router.get("", status_code=status.HTTP_200_OK, response_model=schemas.User)
+def read_current_admin(current_user: schemas.User = Depends(oauth2.get_current_user)):
+  """
+  `현재 관리자 정보`
+  """
+
+  return current_user
