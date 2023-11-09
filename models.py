@@ -27,7 +27,7 @@ class BusinessHour(Base):
   __tablename__ = "business_hour"
   __table_args__ = {'comment': '영업시간'}
   
-  hospital_id = Column(INTEGER(unsigned=True), ForeignKey("hospital.id", onupdate="CASCADE", ondelete="CASCADE"), primary_key=True, nullable=False, comment='병원 FK')
+  id = Column(INTEGER(unsigned=True), primary_key=True, autoincrement=True, nullable=False, comment='영업시간 PK')
   mon = Column(String(50), nullable=True, comment='월요일')
   tue = Column(String(50), nullable=True, comment='화요일')
   wed = Column(String(50), nullable=True, comment='수요일')
@@ -46,5 +46,6 @@ class Hospital(Base):
   introduction = Column(Text, nullable=True, comment='병원 소개글')
   image = Column(Text, nullable=True, comment='대표이미지')
   rating = Column(FLOAT, nullable=False, server_default=text('0'), comment='리뷰 평점')
+  business_hour = Column(INTEGER(unsigned=True), ForeignKey("business_hour.id", onupdate="CASCADE", ondelete="SET NULL"), nullable=True, comment='영업시간 FK')
   
-  business_hour = relationship("BusinessHour", lazy="joined", backref=backref("piggery_list"))
+  business_hour_info = relationship("BusinessHour", lazy="joined")
