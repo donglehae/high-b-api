@@ -5,13 +5,13 @@ from sqlalchemy.orm import Session
 from pytz import timezone
 from datetime import datetime
 from database import get_db
-from routers import user
+from routers import user, hospital
 import schemas, models, utils, oauth2
 import uvicorn
 
 app = FastAPI()
 
-routers = [user.router]
+routers = [user.router, hospital.router]
 for router in routers: app.include_router(router)
 
 def raise_conflict(status_code: status, detail: str):
