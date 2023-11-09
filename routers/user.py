@@ -24,10 +24,8 @@ def create_user(request_data: schemas.UserCreate, db: Session = Depends(get_db))
   """
   `회원 생성`
   """  
-  if duplicated_username(db, request_data.username):
-    raise_conflict(status.HTTP_409_CONFLICT, "이미 사용중인 아이디입니다.")
-  if duplicated_nickname(db, request_data.nickname):
-    raise_conflict(status.HTTP_409_CONFLICT, "이미 사용중인 닉네임입니다.")
+  if duplicated_username(db, request_data.username): raise_conflict(status.HTTP_409_CONFLICT, "이미 사용중인 아이디입니다.")
+  if duplicated_nickname(db, request_data.nickname): raise_conflict(status.HTTP_409_CONFLICT, "이미 사용중인 닉네임입니다.")
   
   hashed_password = utils.hash(request_data.password)
   request_data.password = hashed_password
