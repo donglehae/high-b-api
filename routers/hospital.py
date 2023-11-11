@@ -22,19 +22,38 @@ def create_hospital(request_data: schemas.HospitalCreate, db: Session = Depends(
   """  
   if duplicated_name(db, request_data.name): raise_conflict(status.HTTP_409_CONFLICT, "이미 사용중인 병원명입니다.")
 
+  new_business_hour = models.BusinessHour()
+  db.add(new_business_hour)
+  db.commit()
+  db.refresh(new_business_hour)
+  
+  request_data.business_hour = new_business_hour.id
   new_hospital = models.Hospital(**request_data.model_dump())
   db.add(new_hospital)
   db.commit()
   db.refresh(new_hospital)
   
-  new_business_hour = models.BusinessHour(hospital_id = new_hospital.id)
-  db.add(new_business_hour)
-  db.commit()
-  db.refresh(new_business_hour)
-  
   return new_hospital
 
-@router.put("/{hospital_id}/image", status_code=status.HTTP_201_CREATED, response_model=schemas.Hospital)
+@router.get("/list", status_code=status.HTTP_200_OK, response_model=list[schemas.HospitalDetail])
+def read_hospital_list(db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
+  """
+  `병원 목록`
+  """
+  hospital_list = db.query(models.Hospital).all()
+
+  return hospital_list
+
+@router.get("/{hospital_id}", status_code=status.HTTP_200_OK, response_model=schemas.HospitalDetail)
+def read_hospital(hospital_id: int, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
+  """
+  `병원 정보`
+  """
+  hospital = db.query(models.Hospital).filter(models.Hospital.id == hospital_id).first()
+  
+  return hospital
+
+@router.put("/{hospital_id}/image", status_code=status.HTTP_200_OK, response_model=schemas.Hospital)
 def upload_hospital_image(hospital_id: int, image: UploadFile = File(...), db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
   """
   `병원 대표이미지 추가`
@@ -53,15 +72,14 @@ def upload_hospital_image(hospital_id: int, image: UploadFile = File(...), db: S
   except Exception:
     raise_conflict(status.HTTP_400_BAD_REQUEST, "파일 업로드 실패")
   
-@router.put("/{hospital_id}/hour", status_code=status.HTTP_201_CREATED, response_model=schemas.HospitalDetail)
+@router.put("/{hospital_id}/hour", status_code=status.HTTP_200_OK, response_model=schemas.HospitalDetail)
 def updatae_hospital_hour(hospital_id: int, request_data: schemas.BusinessHour, db: Session = Depends(get_db), current_user: schemas.User = Depends(oauth2.get_current_user)):
   """
   `병원 영업시간 수정`
   """  
-  business_hour_query = db.query(models.BusinessHour).filter(models.BusinessHour.hospital_id == hospital_id)
+  hospital = db.query(models.Hospital).filter(models.Hospital.id == hospital_id).first()
+  business_hour_query = db.query(models.BusinessHour).filter(models.BusinessHour.id == hospital.business_hour)
   business_hour_query.update(request_data.model_dump(), synchronize_session="evaluate")
   db.commit()
-  
-  hospital = db.query(models.Hospital).filter(models.Hospital.id == hospital_id).first()
   
   return hospital

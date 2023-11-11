@@ -47,11 +47,13 @@ class BusinessHour(BusinessHourBase):
   
 # 병원 스키마
 class HospitalCreate(HospitalBase):
+  business_hour: Optional[int] = None
   pass
 
 class Hospital(HospitalBase):
+  id: int
   image: Optional[str] = None
   rating: float
 
 class HospitalDetail(Hospital):
-  business_hour: BusinessHour
+  business_hour_info: Optional[BusinessHour] = None
